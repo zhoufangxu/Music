@@ -16,6 +16,7 @@ export default {
         }
     },
     created(){
+        //获取轮播图数据
         this.$axios.get('/banner?type=2')
          .then(res => {
              this.imgList = res.data.banners;
