@@ -1,19 +1,15 @@
 <template>
     <div>
-        <router-view></router-view>
+        输入验证码
     </div>
 </template>
 
 <script>
 export default {
-    data(){
-        return {
-            
-        }
-    }
+    
 }
 </script>
 
 <style scoped>
-  
+
 </style>

@@ -1,6 +1,13 @@
 <template>
   <div>
     <router-view></router-view>
+    <van-tabbar v-model="active" active-color="#f00" inactive-color="#747474" z-index="100" :route="true">
+        <van-tabbar-item icon="music" to="/">发现</van-tabbar-item>
+        <van-tabbar-item icon="play-circle">视频</van-tabbar-item>
+        <van-tabbar-item icon="audio">我的</van-tabbar-item>
+        <van-tabbar-item icon="friends">云村</van-tabbar-item>
+        <van-tabbar-item icon="manager" to="/userinfo">账号</van-tabbar-item>
+    </van-tabbar>
   </div>
 </template>
 
@@ -8,23 +15,9 @@
 export default {
   data(){
     return{
-     
+      active: 0,
     }
   },
-  created(){
-    //验证用户是否登陆
-    this.$axios.get('/login/status')
-    .then(res => {
-      console.log(res);
-    })
-    .catch(err => {
-      console.log(err);
-      if(err){
-        //如果没有登陆跳转登陆页面
-        this.$router.push("/login")
-      }
-    })
-  }
 }
 </script>
 

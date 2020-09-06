@@ -3,9 +3,12 @@
         <div class="logo">
             <van-icon name="music" size="70" color="#fff"/>
         </div>
-        <van-icon name="edit" color="#fff" size="20" class="input-phone" @click="inputPhone"/>
+        <div class="input-phone">
+            <van-icon name="edit" color="#fff" size="20"  @click="inputPhone"/>
+            <div class="input-phone-cell">{{phone}}</div>
+        </div>
         <div class="login-box">
-            <span class="login-btn">一键登陆</span>
+            <span class="login-btn" @click="signin">一键登陆</span>
             <span class="login-feel">立即体验</span>
         </div>
         <div class="clause">
@@ -22,44 +25,131 @@
         >
             <div class="phone-box">
                 <van-field v-model="tel" type="tel" label="手机号" placeholder="请输入手机号码" maxlength="11" @input="inputVal"/>
-                <van-button type="primary" size="large" :round="true" color="#f00" class="next-btn" :disabled='isDisabled'>下一步</van-button>
+                <van-button type="primary" size="large" :round="true" color="#f00" class="next-btn" :disabled='isDisabled' @click="next">下一步</van-button>
+                <span class="promptMsg">如果手机号码没有注册，则自动注册</span>
+            </div>
+        </van-popup>
+        <van-popup
+            v-model="passwordShow"
+            closeable
+            close-icon="close"
+            position="bottom"
+            :style="{ height: '30%' }"
+        >
+            <div class="phone-box">
+                <van-field v-model="password" type="password" label="密码" placeholder="请输入密码" maxlength="9" @input="inputUpwd"/>
+                <van-button type="primary" size="large" :round="true" color="#f00" class="next-btn" @click="login">登录</van-button>
             </div>
         </van-popup>
     </div>
 </template>
-
 <script>
+import { mapState } from 'vuex';
 export default {
     data(){
         return {
             windowWidth: document.documentElement.clientWidth,  //实时屏幕宽度
             windowHeight: document.documentElement.clientHeight,   //实时屏幕高度
             checked: false,
-            show: false,
+            show: false, //输入手机号码显示隐藏
             tel: '',
             isDisabled: true,
+            canClick: false, //只有手机号码验证通过才可以发送请求
+            password: '',
+            passwordShow: false,
         }
     },
     methods:{
+        //点击图标输入手机号码
         inputPhone(){
             if(!this.checked){
-                this.$notify({
-                    message: '请先勾选《服务条款》《隐私政策》《儿童隐私政策》和《天翼账号服务协议》',
-                    color: '#fff',
-                    background: '#000',
-                });
+                this.$toast('请先勾选《服务条款》《隐私政策》《儿童隐私政策》和《天翼账号服务协议》');
             }else{
                 this.show = true;
             }
         },
-        inputVal(){
+        inputVal(){ //input输入框事件
             if(this.tel !== ''){
                 this.isDisabled = false;
+            }else{
+                this.isDisabled = true;
+            }
+        },
+        next(){ //输入手机号码验证是否注册，进行下一步操作
+            let phone = parseInt(this.tel);
+            this.$axios.get('/cellphone/existence/check?phone=' + phone)
+            .then(res => {
+                if(res.data.exist === 1){
+                    this.show = false;
+                    this.passwordShow = true;
+                } else {
+                    this.$router.push('/checkcode');
+                }
+            })
+            .catch(err => {
+                console.log(err);
+            })
+        },
+        // 将用户密码存入vuex中
+        inputUpwd(){
+            this.$store.commit('increment',this.password);
+        },
+        //获取用户名密码登录
+        login(){
+            let phone = this.tel;
+            let upwd = this.password;
+            this.$axios.get(`/login/cellphone?phone=${phone}&password=${upwd}`)
+            .then(res => {
+                if(res.data.loginType === 1){
+                    localStorage.setItem('username', res.data.account.userName);
+                    localStorage.setItem('token', res.data.token);
+                    let userInfo = res.data.bindings[0];
+                    let tokenJsonObj = JSON.parse(userInfo.tokenJsonStr);
+                    let userId = res.data.bindings[0].userId;
+                    localStorage.setItem('phone', tokenJsonObj.cellphone);
+                    localStorage.setItem('userId', userId);
+                    this.$router.push('/');
+                } else {
+                    this.$toast(res.data.msg);
+                }
+            })
+            .catch(err => {
+                console.log(err);
+            })
+        },
+        //快速登录
+        signin(){
+            if(this.checked){
+                 this.$axios.get(`/login/cellphone?phone=${this.phone}&password=${this.upwd}`)
+                .then(res => {
+                    if(res.data.loginType === 1){
+                        this.$router.push('/');
+                    }
+                })
+                .catch(err => {
+                    console.log(err);
+                })
+            } else {
+                this.$toast('请先勾选《服务条款》《隐私政策》《儿童隐私政策》和《天翼账号服务协议》');
             }
         }
     },
-    mounted(){
-       
+    computed: {
+        ...mapState({
+            phone: 'phone',
+            upwd: 'upwd',
+        })
+    },
+    watch:{
+        tel(){ //监视tel属性
+            //正则验证手机号格式
+            let phoneExp = /^1\d{10}$/;
+            if(phoneExp.test(this.tel)){
+                this.canClick = true;
+            }else{
+                this.canClick = false;
+            }
+        }
     }
 }
 </script>
@@ -75,8 +165,14 @@ export default {
      margin-top: 200px;
  }
  .input-phone{
-     margin-top: 150px;
+     display: flex;
+     flex-direction: row;
+     margin-top: 130px;
      margin-bottom: 10px;
+ }
+ .input-phone-cell{
+     margin-left: 5px;
+     color: #fff;
  }
  .login-box{
      display: flex;
@@ -114,6 +210,13 @@ export default {
  }
  .phone-box{
      margin-top: 50px;
+ }
+ .promptMsg{
+     font-size: 14px;
+     color: #d2d2d2;
+     display: flex;
+     justify-content: center;
+     margin-top: 8px;
  }
  .next-btn{
      margin-top: 20px;
