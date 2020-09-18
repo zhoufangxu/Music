@@ -20,7 +20,8 @@ Vue.use(VueRouter)
     name: 'Home',
     component: Home,
     meta: {
-      isLogin: true  //添加该字段表示进入这个路由需要登录
+      isLogin: true,  //添加该字段表示进入这个路由需要登录\
+      keepAlive: true,  //是否缓存路由
     },
     children: [
       {
@@ -44,6 +45,9 @@ Vue.use(VueRouter)
     path: '/userinfo',
     name: 'userinfo',
     component: UserInfo,
+    meta: {
+      isLogin: true,
+    }
   }
 ]
 

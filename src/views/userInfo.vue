@@ -9,6 +9,7 @@ export default {
         logout:function(){
             this.$axios.get('/logout')
             .then(res => {
+                localStorage.clear();
                 if(res.data.code == 200){
                     this.$router.push('/login');
                 }

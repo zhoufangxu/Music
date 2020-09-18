@@ -69,6 +69,8 @@ export default {
             }
         },
         inputVal(){ //input输入框事件
+            console.log(this.tel);
+            localStorage.setItem('phone', this.tel);
             if(this.tel !== ''){
                 this.isDisabled = false;
             }else{
@@ -103,10 +105,10 @@ export default {
                 if(res.data.loginType === 1){
                     localStorage.setItem('username', res.data.account.userName);
                     localStorage.setItem('token', res.data.token);
-                    let userInfo = res.data.bindings[0];
-                    let tokenJsonObj = JSON.parse(userInfo.tokenJsonStr);
+                    // let userInfo = res.data.bindings[0];
+                    // let tokenJsonObj = JSON.parse(userInfo.tokenJsonStr);
                     let userId = res.data.bindings[0].userId;
-                    localStorage.setItem('phone', tokenJsonObj.cellphone);
+                    // localStorage.setItem('phone', tokenJsonObj.cellphone);
                     localStorage.setItem('userId', userId);
                     this.$router.push('/');
                 } else {
@@ -119,6 +121,9 @@ export default {
         },
         //快速登录
         signin(){
+            if( this.phone === '' || this.upwd === ''){
+                this.$toast('请从新登陆');
+            }
             if(this.checked){
                  this.$axios.get(`/login/cellphone?phone=${this.phone}&password=${this.upwd}`)
                 .then(res => {

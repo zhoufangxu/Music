@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import axios from 'axios';
+import echarts from 'echarts';
 
 
 //设置默认请求地址
@@ -13,6 +14,7 @@ axios.defaults.withCredentials = true;
 
 //将axios加入到vue原型对象中
 Vue.prototype.$axios = axios;
+Vue.prototype.$echarts = echarts;
 
 
 
